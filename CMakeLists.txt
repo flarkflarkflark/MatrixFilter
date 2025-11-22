@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.17)
 project(MatrixFilter VERSION 1.0.0 LANGUAGES C CXX)
 
-# Find CLAP
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(CLAP REQUIRED clap)
+# Find CLAP - try external directory first, then pkg-config
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/clap/include")
+    set(CLAP_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/external/clap/include")
+    message(STATUS "Using CLAP from external/clap")
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(CLAP REQUIRED clap)
+    message(STATUS "Using CLAP from pkg-config")
+endif()
 
 add_library(MatrixFilter SHARED)
 set_target_properties(MatrixFilter PROPERTIES
@@ -19,8 +25,8 @@ target_include_directories(MatrixFilter PRIVATE
 
 # Source files
 target_sources(MatrixFilter PRIVATE
-    src/dsp.h
     src/dsp.cpp
+    src/gui.cpp
     src/plugin.cpp
     src/plugin-extensions.cpp
     src/gui-extension.cpp
