@@ -1,0 +1,166 @@
+name: Build MatrixFilter
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        format: [clap, vst3, lv2]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          build-essential \
+          libgl1-mesa-dev \
+          libx11-dev \
+          libxrandr-dev \
+          libxinerama-dev \
+          libxcursor-dev \
+          libxi-dev \
+          libasound2-dev \
+          libjack-jackd2-dev \
+          lv2-dev
+    
+    - name: Download CLAP SDK
+      if: matrix.format == 'clap'
+      run: |
+        git clone https://github.com/free-audio/clap.git external/clap
+    
+    - name: Download VST3 SDK
+      if: matrix.format == 'vst3'
+      run: |
+        git clone --recursive https://github.com/steinbergmedia/vst3sdk.git external/vst3sdk
+    
+    - name: Build ${{ matrix.format }}
+      run: |
+        chmod +x build-${{ matrix.format }}.sh
+        ./build-${{ matrix.format }}.sh
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: MatrixFilter-Linux-${{ matrix.format }}
+        path: |
+          build-${{ matrix.format }}/**/*.so
+          build-${{ matrix.format }}/**/*.clap
+          build-${{ matrix.format }}/**/*.vst3
+          build-${{ matrix.format }}/**/*.lv2
+
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        format: [clap, vst3, lv2]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Download CLAP SDK
+      if: matrix.format == 'clap'
+      run: |
+        git clone https://github.com/free-audio/clap.git external/clap
+    
+    - name: Download VST3 SDK
+      if: matrix.format == 'vst3'
+      run: |
+        git clone --recursive https://github.com/steinbergmedia/vst3sdk.git external/vst3sdk
+    
+    - name: Build ${{ matrix.format }}
+      run: |
+        if ("${{ matrix.format }}" -eq "clap") {
+          ./build-clap.bat
+        } elseif ("${{ matrix.format }}" -eq "vst3") {
+          ./build-vst3.bat
+        } else {
+          ./build-lv2.bat
+        }
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: MatrixFilter-Windows-${{ matrix.format }}
+        path: |
+          build-${{ matrix.format }}/**/*.dll
+          build-${{ matrix.format }}/**/*.clap
+          build-${{ matrix.format }}/**/*.vst3
+
+  build-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        format: [clap, vst3, lv2]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        brew install cmake pkg-config
+    
+    - name: Download CLAP SDK
+      if: matrix.format == 'clap'
+      run: |
+        git clone https://github.com/free-audio/clap.git external/clap
+    
+    - name: Download VST3 SDK
+      if: matrix.format == 'vst3'
+      run: |
+        git clone --recursive https://github.com/steinbergmedia/vst3sdk.git external/vst3sdk
+    
+    - name: Build ${{ matrix.format }}
+      run: |
+        chmod +x build-${{ matrix.format }}.sh
+        ./build-${{ matrix.format }}.sh
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: MatrixFilter-macOS-${{ matrix.format }}
+        path: |
+          build-${{ matrix.format }}/**/*.dylib
+          build-${{ matrix.format }}/**/*.clap
+          build-${{ matrix.format }}/**/*.vst3
+          build-${{ matrix.format }}/**/*.lv2
+
+  create-release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          MatrixFilter-*/**/*
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
