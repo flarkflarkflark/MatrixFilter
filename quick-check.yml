@@ -1,0 +1,108 @@
+name: Quick Build Check
+
+# This is a lighter-weight workflow for quick CI checks
+# Use this if the full multi-platform build is too slow
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quick-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          build-essential \
+          libgl1-mesa-dev \
+          libx11-dev \
+          libasound2-dev
+    
+    - name: Download CLAP SDK
+      run: |
+        git clone https://github.com/free-audio/clap.git external/clap
+    
+    - name: Build CLAP (test build only)
+      run: |
+        chmod +x build-clap.sh
+        ./build-clap.sh
+    
+    - name: Verify build output
+      run: |
+        ls -la build-clap/
+        if [ -f build-clap/*.clap ]; then
+          echo "✓ CLAP plugin built successfully"
+        else
+          echo "✗ CLAP plugin build failed"
+          exit 1
+        fi
+
+  check-naming:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Check for incorrect naming
+      run: |
+        echo "Checking for 'Flanger' references that should be 'Filter'..."
+        
+        # Count occurrences (excluding this workflow file and git directory)
+        FLANGER_COUNT=$(grep -r -i "flanger" . \
+          --exclude-dir={.git,.github,build*,external} \
+          --exclude="*.{o,so,dll,dylib}" \
+          2>/dev/null | wc -l || echo "0")
+        
+        echo "Found $FLANGER_COUNT occurrences of 'flanger'"
+        
+        if [ "$FLANGER_COUNT" -gt 0 ]; then
+          echo "⚠️  Warning: Found references to 'flanger' in code"
+          echo "Files containing 'flanger':"
+          grep -r -i -l "flanger" . \
+            --exclude-dir={.git,.github,build*,external} \
+            --exclude="*.{o,so,dll,dylib}" \
+            2>/dev/null | head -10
+          echo ""
+          echo "This is just a warning, not failing the build."
+          echo "Run the fix_naming.sh script to correct these."
+        else
+          echo "✓ No 'flanger' references found"
+        fi
+
+  check-build-scripts:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Verify build scripts exist and are executable
+      run: |
+        echo "Checking build scripts..."
+        
+        SCRIPTS=("build-all.sh" "build-clap.sh" "build-vst3.sh" "build-lv2.sh")
+        
+        for script in "${SCRIPTS[@]}"; do
+          if [ -f "$script" ]; then
+            if [ -x "$script" ]; then
+              echo "✓ $script exists and is executable"
+            else
+              echo "⚠️  $script exists but is not executable"
+              echo "   Run: git add --chmod=+x $script"
+            fi
+          else
+            echo "✗ $script not found"
+          fi
+        done
