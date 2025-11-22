@@ -8,8 +8,8 @@ set -e
 echo "Building flark's MatrixFilter LV2 Plugin..."
 
 # Create build directory
-mkdir -p build/lv2
-cd build/lv2
+mkdir -p build-lv2
+cd build-lv2
 
 # Check for LV2 development headers
 if ! pkg-config --exists lv2 2>/dev/null; then
@@ -38,7 +38,7 @@ echo "Running CMake configuration for LV2..."
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS build
-    cmake ../.. \
+    cmake ../lv2 \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=clang \
         -DCMAKE_CXX_COMPILER=clang++ \
@@ -46,20 +46,20 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Linux build
-    cmake ../.. \
+    cmake ../lv2 \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=gcc \
         -DCMAKE_CXX_COMPILER=g++ \
         -DCMAKE_INSTALL_PREFIX=./install
 elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
     # Windows build
-    cmake ../.. \
+    cmake ../lv2 \
         -G "Visual Studio 16 2019" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=.\install
 else
     # Generic Unix build
-    cmake ../.. \
+    cmake ../lv2 \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=./install
 fi
@@ -123,7 +123,7 @@ echo "LV2 plugin copied to installation directory."
 
 echo ""
 echo "LV2 build completed!"
-echo "Plugin location: build/lv2/install/lv2/flark-matrixfilter.lv2/"
+echo "Plugin location: build-lv2/install/lv2/flark-matrixfilter.lv2/"
 echo ""
 echo "To use this LV2 plugin:"
 echo "1. Copy the flark-matrixfilter.lv2 folder to your LV2 plugin directory"
