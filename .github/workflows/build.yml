@@ -17,7 +17,7 @@ jobs:
     - name: Download SDKs
       run: |
         mkdir -p external
-        [ "${{ matrix.format }}" = "clap" ] && git clone https://github.com/free-audio/clap.git external/clap || true
+        git clone https://github.com/free-audio/clap.git external/clap
         [ "${{ matrix.format }}" = "vst3" ] && git clone --recursive https://github.com/steinbergmedia/vst3sdk.git external/vst3sdk || true
     - name: Build
       run: |
@@ -66,7 +66,7 @@ jobs:
     - name: Download SDKs
       run: |
         mkdir -p external
-        [ "${{ matrix.format }}" = "clap" ] && git clone https://github.com/free-audio/clap.git external/clap || true
+        git clone https://github.com/free-audio/clap.git external/clap
         [ "${{ matrix.format }}" = "vst3" ] && git clone --recursive https://github.com/steinbergmedia/vst3sdk.git external/vst3sdk || true
     - name: Build
       run: |
