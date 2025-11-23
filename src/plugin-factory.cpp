@@ -1,7 +1,7 @@
 #include <clap/clap.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plugin.cpp"
+#include "plugin.h"
 
 // Plugin factory
 static const struct {
