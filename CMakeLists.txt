@@ -63,7 +63,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     endif()
 
     # Symbol exports for macOS
-    target_link_options(MatrixFilter PRIVATE -exported_symbols_list ${CMAKE_CURRENT_SOURCE_DIR}/src/symbols.map)
+    target_link_options(MatrixFilter PRIVATE -exported_symbols_list ${CMAKE_CURRENT_SOURCE_DIR}/src/symbols-macos.txt)
     set_target_properties(MatrixFilter PROPERTIES
         BUNDLE True
         BUNDLE_EXTENSION clap
