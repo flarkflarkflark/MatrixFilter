@@ -8,10 +8,10 @@ extern "C" {
 #endif
 
 // Plugin descriptor
-extern const clap_plugin_descriptor_t s_plugin_desc;
+extern clap_plugin_descriptor_t s_plugin_desc;
 
 // Parameter information
-extern const clap_param_info_t s_param_info[];
+extern clap_param_info_t s_param_info[];
 
 // Plugin factory
 extern clap_plugin_t *audio_filter_plugin_create(const clap_host_t *host);

@@ -5,8 +5,12 @@
 #include <string.h>
 #include "dsp.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Plugin descriptor
-const clap_plugin_descriptor_t s_plugin_desc = {
+clap_plugin_descriptor_t s_plugin_desc = {
     .clap_version = CLAP_VERSION_INIT,
     .id = "com.flark.matrixfilter",
     .name = "flark's MatrixFilter",
@@ -64,13 +68,13 @@ typedef struct {
 } audio_filter_plugin_t;
 
 // Plugin extensions (defined in plugin-extensions.cpp)
-extern const clap_plugin_params_t s_plugin_params;
-extern const clap_plugin_state_t s_plugin_state;
-extern const clap_plugin_latency_t s_plugin_latency;
-extern const clap_plugin_audio_ports_t s_plugin_audio_ports;
-extern const clap_plugin_ambisonic_t s_plugin_ambisonic;
-extern const clap_plugin_surround_t s_plugin_surround;
-extern const clap_plugin_gui_t s_plugin_gui;
+extern clap_plugin_params_t s_plugin_params;
+extern clap_plugin_state_t s_plugin_state;
+extern clap_plugin_latency_t s_plugin_latency;
+extern clap_plugin_audio_ports_t s_plugin_audio_ports;
+extern clap_plugin_ambisonic_t s_plugin_ambisonic;
+extern clap_plugin_surround_t s_plugin_surround;
+extern clap_plugin_gui_t s_plugin_gui;
 
 // Forward declarations
 static void destroy(audio_filter_plugin_t *plugin);
@@ -339,7 +343,7 @@ static bool audio_filter_activate(const clap_plugin_t *plugin, double sample_rat
 }
 
 // Parameter information
-const clap_param_info_t s_param_info[] = {
+clap_param_info_t s_param_info[] = {
     {
         .id = PARAM_CUTOFF,
         .flags = CLAP_PARAM_IS_AUTOMATABLE,
@@ -391,3 +395,7 @@ const clap_param_info_t s_param_info[] = {
         .default_value = 1.0,
     }
 };
+
+#ifdef __cplusplus
+}
+#endif

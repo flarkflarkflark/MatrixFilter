@@ -11,6 +11,10 @@
 #include <clap/ext/ambisonic.h>
 #include <clap/ext/gui.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Parameter IDs (from plugin.cpp)
 enum {
     PARAM_CUTOFF = 0,
@@ -19,10 +23,6 @@ enum {
     PARAM_TYPE = 3,
     PARAM_ENABLED = 4
 };
-
-// Forward declarations from plugin.cpp
-extern const clap_param_info_t s_param_info[];
-extern const clap_plugin_descriptor_t s_plugin_desc;
 
 // Plugin structure (from plugin.cpp)
 typedef struct {
@@ -192,7 +192,7 @@ static bool audio_filter_parse_param_value(const clap_plugin_t *plugin, clap_id 
     return false;
 }
 
-const clap_plugin_params_t s_plugin_params = {
+clap_plugin_params_t s_plugin_params = {
     .count = audio_filter_count_params,
     .get_info = audio_filter_get_param_info,
     .get_value = audio_filter_get_param_value,
@@ -232,7 +232,7 @@ static bool audio_filter_load(const clap_plugin_t *plugin, const clap_istream_t 
     return true;
 }
 
-const clap_plugin_state_t s_plugin_state = {
+clap_plugin_state_t s_plugin_state = {
     .save = audio_filter_save,
     .load = audio_filter_load,
 };
@@ -243,7 +243,7 @@ static uint32_t audio_filter_get_latency(const clap_plugin_t *plugin) {
     return 0;
 }
 
-const clap_plugin_latency_t s_plugin_latency = {
+clap_plugin_latency_t s_plugin_latency = {
     .get = audio_filter_get_latency,
 };
 
@@ -265,24 +265,24 @@ static bool audio_filter_get_audio_port_info(const clap_plugin_t *plugin, uint32
     return true;
 }
 
-const clap_plugin_audio_ports_t s_plugin_audio_ports = {
+clap_plugin_audio_ports_t s_plugin_audio_ports = {
     .count = audio_filter_count_audio_ports,
     .get = audio_filter_get_audio_port_info,
 };
 
 // Surround extension - stub (not implemented)
-const clap_plugin_surround_t s_plugin_surround = {
+clap_plugin_surround_t s_plugin_surround = {
     .get_channel_map = NULL,
 };
 
 // Ambisonic extension - stub (not implemented)
-const clap_plugin_ambisonic_t s_plugin_ambisonic = {
+clap_plugin_ambisonic_t s_plugin_ambisonic = {
     .is_config_supported = NULL,
     .get_config = NULL,
 };
 
 // GUI extension - stub (not implemented)
-const clap_plugin_gui_t s_plugin_gui = {
+clap_plugin_gui_t s_plugin_gui = {
     .is_api_supported = NULL,
     .get_preferred_api = NULL,
     .create = NULL,
@@ -299,3 +299,8 @@ const clap_plugin_gui_t s_plugin_gui = {
     .show = NULL,
     .hide = NULL,
 };
+
+
+#ifdef __cplusplus
+}
+#endif
