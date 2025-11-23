@@ -3,6 +3,7 @@
 #include "pluginterfaces/base/ibstream.h"
 #include "base/source/fstreamer.h"
 #include <algorithm>
+#include <cmath>
 
 namespace Steinberg {
 namespace MatrixFilterVST {

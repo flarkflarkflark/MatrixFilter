@@ -1,6 +1,7 @@
 #include "MatrixFilterVST_controller.h"
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/base/ibstream.h"
+#include <cmath>
 
 namespace Steinberg {
 namespace MatrixFilterVST {
