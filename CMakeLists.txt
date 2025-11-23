@@ -16,13 +16,19 @@ target_include_directories(MatrixFilter PRIVATE
 # Source files
 target_sources(MatrixFilter PRIVATE
     src/dsp.cpp
-    src/gui.cpp
     src/plugin.cpp
     src/plugin-extensions.cpp
-    src/gui-extension.cpp
     src/plugin-factory.cpp
     src/plugin-entry.cpp
 )
+
+# Add GUI files if OpenGL is available
+if(OpenGL_FOUND)
+    target_sources(MatrixFilter PRIVATE
+        src/gui.cpp
+        src/gui-extension.cpp
+    )
+endif()
 
 # Link libraries
 target_link_libraries(MatrixFilter PRIVATE

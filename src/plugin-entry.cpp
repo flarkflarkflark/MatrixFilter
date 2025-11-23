@@ -6,6 +6,9 @@
 #include <threads.h>
 #endif
 
+// Forward declaration from plugin-factory.cpp
+extern const void *clap_get_factory(const char *factory_id);
+
 // Global plugin entry state
 static int g_entry_init_counter = 0;
 
