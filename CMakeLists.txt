@@ -4,7 +4,7 @@ project(MatrixFilter VERSION 1.0.0 LANGUAGES C CXX)
 add_library(MatrixFilter SHARED)
 set_target_properties(MatrixFilter PROPERTIES
     C_STANDARD 11
-    CXX_STANDARD 17
+    CXX_STANDARD 20
 )
 
 # Include directories

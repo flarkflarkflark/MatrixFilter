@@ -11,6 +11,11 @@
 #include <clap/ext/ambisonic.h>
 #include <clap/ext/gui.h>
 
+// Windows compatibility
+#ifdef _WIN32
+#define strcasecmp _stricmp
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

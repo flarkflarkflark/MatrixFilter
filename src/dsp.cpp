@@ -1,6 +1,12 @@
 #include "dsp.h"
+
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <string.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 // Utility functions
 float freq_to_omega(float frequency, float sample_rate) {
