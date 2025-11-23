@@ -4,16 +4,17 @@
 [![Latest Release](https://img.shields.io/github/v/release/flarkflarkflark/MatrixFilter)](https://github.com/flarkflarkflark/MatrixFilter/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A high-quality stereo audio filter plugin in CLAP format, featuring biquad filter implementation for professional audio processing.
+A high-quality stereo audio filter plugin available in both CLAP and VST3 formats, featuring biquad filter implementation for professional audio processing.
 
 ## Features
 
 - 🎚️ **Biquad Filter DSP** - Professional-grade digital filter implementation
 - 🎧 **Stereo Processing** - Independent left/right channel filtering
-- 🔌 **CLAP Plugin Format** - Modern, open audio plugin standard
+- 🔌 **Dual Plugin Formats** - Available as both CLAP and VST3
 - 🖥️ **Cross-Platform** - Builds on Linux, Windows, and macOS
 - ⚡ **High Performance** - Optimized C++ implementation
 - 🎛️ **Parametric Control** - Adjustable filter parameters via host automation
+- 🎼 **7 Filter Types** - Lowpass, Highpass, Bandpass, Notch, Peaking, Low Shelf, High Shelf
 
 ## Download
 
@@ -28,38 +29,75 @@ Download the appropriate package for your platform:
 
 ### Linux
 ```bash
-unzip MatrixFilter-Linux.zip
+# CLAP format
+unzip MatrixFilter-Linux-CLAP.zip
 mkdir -p ~/.clap
 cp MatrixFilter.clap ~/.clap/
+
+# VST3 format
+unzip MatrixFilter-Linux-VST3.zip
+mkdir -p ~/.vst3
+cp -r MatrixFilterVST.vst3 ~/.vst3/
 ```
 
 ### Windows
-1. Extract `MatrixFilter-Windows.zip`
-2. Copy `MatrixFilter.clap` to one of:
-   - `C:\Program Files\Common Files\CLAP\` (system-wide)
-   - `%LOCALAPPDATA%\Programs\Common\CLAP\` (user-specific)
+```powershell
+# CLAP format
+# Extract MatrixFilter-Windows-CLAP.zip
+# Copy MatrixFilter.clap to:
+#   - C:\Program Files\Common Files\CLAP\ (system-wide)
+#   - %LOCALAPPDATA%\Programs\Common\CLAP\ (user-specific)
+
+# VST3 format
+# Extract MatrixFilter-Windows-VST3.zip
+# Copy MatrixFilterVST.vst3 to:
+#   - C:\Program Files\Common Files\VST3\ (system-wide)
+#   - %LOCALAPPDATA%\Programs\Common\VST3\ (user-specific)
+```
 
 ### macOS
 ```bash
-unzip MatrixFilter-macOS.zip
+# CLAP format
+unzip MatrixFilter-macOS-CLAP.zip
 mkdir -p ~/Library/Audio/Plug-Ins/CLAP
-cp MatrixFilter.clap ~/Library/Audio/Plug-Ins/CLAP/
+cp -r MatrixFilter.clap ~/Library/Audio/Plug-Ins/CLAP/
+
+# VST3 format
+unzip MatrixFilter-macOS-VST3.zip
+mkdir -p ~/Library/Audio/Plug-Ins/VST3
+cp -r MatrixFilterVST.vst3 ~/Library/Audio/Plug-Ins/VST3/
 ```
 
 ## Usage
 
-1. **Load in your DAW**: MatrixFilter will appear in your CLAP-compatible DAW's plugin list
+1. **Load in your DAW**: MatrixFilter will appear in your plugin list (CLAP or VST3)
 2. **Insert on a track**: Add MatrixFilter to any audio track
-3. **Adjust parameters**: Use your DAW's automation to control filter parameters
+3. **Adjust parameters**: Control filter type, cutoff, resonance, and gain via automation
 4. **Process audio**: The biquad filter will process incoming stereo audio in real-time
+
+### Parameters
+
+- **Filter Type**: Lowpass, Highpass, Bandpass, Notch, Peaking, Low Shelf, High Shelf
+- **Cutoff Frequency**: 20Hz - 20kHz (logarithmic scale)
+- **Resonance (Q)**: 0.1 - 10.0
+- **Gain**: -24dB to +24dB (for shelf and peaking filters)
 
 ### Compatible DAWs
 
-MatrixFilter works with any DAW that supports CLAP plugins, including:
+**CLAP Format:**
 - Bitwig Studio 4.0+
 - Reaper 6.68+
 - MultitrackStudio
 - And other CLAP-compatible hosts
+
+**VST3 Format:**
+- Ableton Live 11+
+- Cubase/Nuendo
+- FL Studio 21+
+- Logic Pro (with VST3 support)
+- Reaper
+- Studio One
+- And most modern DAWs
 
 ## Building from Source
 
