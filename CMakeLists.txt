@@ -9,6 +9,7 @@ message(STATUS "Building MatrixFilter VST3")
 # Disable VSTGUI to avoid GUI dependencies
 set(SMTG_ADD_VSTGUI OFF CACHE BOOL "Disable VSTGUI" FORCE)
 set(SMTG_CREATE_VST2_VERSION OFF CACHE BOOL "Disable VST2" FORCE)
+set(SMTG_ENABLE_VSTGUI_SUPPORT OFF CACHE BOOL "Disable VSTGUI support" FORCE)
 
 # Add VST3 SDK
 add_subdirectory(external/vst3sdk)
