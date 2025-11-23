@@ -6,10 +6,12 @@ project(MatrixFilter VERSION 1.1.0 LANGUAGES C CXX)
 #-------------------------------------------------------------------------------
 message(STATUS "Building MatrixFilter VST3")
 
-# Disable VSTGUI to avoid GUI dependencies
+# Disable VSTGUI and samples to avoid GUI dependencies
 set(SMTG_ADD_VSTGUI OFF CACHE BOOL "Disable VSTGUI" FORCE)
 set(SMTG_CREATE_VST2_VERSION OFF CACHE BOOL "Disable VST2" FORCE)
 set(SMTG_ENABLE_VSTGUI_SUPPORT OFF CACHE BOOL "Disable VSTGUI support" FORCE)
+set(SMTG_ADD_VST3_HOSTING_SAMPLES OFF CACHE BOOL "Disable VST3 hosting samples" FORCE)
+set(SMTG_ADD_VST3_PLUGINS_SAMPLES OFF CACHE BOOL "Disable VST3 plugin samples" FORCE)
 
 # Add VST3 SDK
 add_subdirectory(external/vst3sdk)
