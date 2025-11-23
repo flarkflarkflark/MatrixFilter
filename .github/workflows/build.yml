@@ -32,7 +32,7 @@ jobs:
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release ..
-          make -j$(nproc)
+          make -j$(nproc) MatrixFilterVST || make MatrixFilterVST
 
       - name: Upload VST3 artifacts
         if: success()
@@ -58,7 +58,7 @@ jobs:
           mkdir build
           cd build
           cmake -G "Visual Studio 17 2022" -A x64 ..
-          cmake --build . --config Release
+          cmake --build . --config Release --target MatrixFilterVST
 
       - name: Upload VST3 artifacts
         if: success()
@@ -85,7 +85,7 @@ jobs:
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 ..
-          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu) MatrixFilterVST || make MatrixFilterVST
 
       - name: Upload VST3 artifacts
         if: success()
