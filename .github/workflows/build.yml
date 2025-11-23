@@ -19,13 +19,22 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake build-essential libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libasound2-dev libjack-jackd2-dev libfreetype6-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libcairo2-dev libfontconfig1-dev
+          sudo apt-get install -y cmake build-essential libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libasound2-dev libjack-jackd2-dev libfreetype6-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libcairo2-dev libfontconfig1-dev pkg-config
 
-      - name: Build CLAP plugin
+      - name: Verify Freetype installation
+        run: |
+          pkg-config --modversion freetype2
+          pkg-config --cflags freetype2
+          pkg-config --libs freetype2
+
+      - name: Build plugins
         run: |
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_BUILD_TYPE=Release \
+                -DFREETYPE_INCLUDE_DIRS=/usr/include/freetype2 \
+                -DFREETYPE_LIBRARY=/usr/lib/x86_64-linux-gnu/libfreetype.so \
+                ..
           make -j$(nproc)
 
       - name: Upload CLAP artifacts
