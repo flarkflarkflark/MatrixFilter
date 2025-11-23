@@ -19,31 +19,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake build-essential libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libasound2-dev libjack-jackd2-dev libfreetype6-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libcairo2-dev libfontconfig1-dev pkg-config
+          sudo apt-get install -y cmake build-essential libgl1-mesa-dev libglu1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libasound2-dev libjack-jackd2-dev libfreetype6-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libcairo2-dev libfontconfig1-dev libpango1.0-dev pkg-config
 
-      - name: Verify Freetype installation
-        run: |
-          pkg-config --modversion freetype2
-          pkg-config --cflags freetype2
-          pkg-config --libs freetype2
-
-      - name: Build plugins
+      - name: Build VST3 plugin
         run: |
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release \
-                -DFREETYPE_INCLUDE_DIRS=/usr/include/freetype2 \
-                -DFREETYPE_LIBRARY=/usr/lib/x86_64-linux-gnu/libfreetype.so \
-                ..
+          cmake -DCMAKE_BUILD_TYPE=Release ..
           make -j$(nproc)
-
-      - name: Upload CLAP artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: MatrixFilter-Linux-CLAP
-          path: build/**/*.clap
-          if-no-files-found: warn
 
       - name: Upload VST3 artifacts
         if: success()
@@ -51,7 +34,7 @@ jobs:
         with:
           name: MatrixFilter-Linux-VST3
           path: build/**/*.vst3
-          if-no-files-found: warn
+          if-no-files-found: error
 
   build-windows:
     runs-on: windows-latest
@@ -64,20 +47,12 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Build CLAP plugin
+      - name: Build VST3 plugin
         run: |
           mkdir build
           cd build
           cmake -G "Visual Studio 17 2022" -A x64 ..
           cmake --build . --config Release
-
-      - name: Upload CLAP artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: MatrixFilter-Windows-CLAP
-          path: build/**/*.clap
-          if-no-files-found: warn
 
       - name: Upload VST3 artifacts
         if: success()
@@ -85,7 +60,7 @@ jobs:
         with:
           name: MatrixFilter-Windows-VST3
           path: build/**/*.vst3
-          if-no-files-found: warn
+          if-no-files-found: error
 
   build-macos:
     runs-on: macos-latest
@@ -99,20 +74,12 @@ jobs:
         run: |
           brew install cmake pkg-config
 
-      - name: Build CLAP plugin
+      - name: Build VST3 plugin
         run: |
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 ..
           make -j$(sysctl -n hw.ncpu)
-
-      - name: Upload CLAP artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: MatrixFilter-macOS-CLAP
-          path: build/**/*.clap
-          if-no-files-found: warn
 
       - name: Upload VST3 artifacts
         if: success()
@@ -120,4 +87,4 @@ jobs:
         with:
           name: MatrixFilter-macOS-VST3
           path: build/**/*.vst3
-          if-no-files-found: warn
+          if-no-files-found: error
