@@ -1,5 +1,3 @@
-#pragma once
-
 #include <clap/clap.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -7,8 +5,20 @@
 #include <string.h>
 #include "dsp.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Plugin features array (static to avoid MSVC compound literal issues)
+static const char *s_plugin_features[] = {
+    CLAP_PLUGIN_FEATURE_FILTER,
+    CLAP_PLUGIN_FEATURE_AUDIO_EFFECT,
+    CLAP_PLUGIN_FEATURE_STEREO,
+    NULL
+};
+
 // Plugin descriptor
-static const clap_plugin_descriptor_t s_plugin_desc = {
+clap_plugin_descriptor_t s_plugin_desc = {
     .clap_version = CLAP_VERSION_INIT,
     .id = "com.flark.matrixfilter",
     .name = "flark's MatrixFilter",
@@ -16,15 +26,9 @@ static const clap_plugin_descriptor_t s_plugin_desc = {
     .url = "https://flark.dev/matrixfilter",
     .manual_url = "https://flark.dev/matrixfilter/manual",
     .support_url = "https://flark.dev/matrixfilter/support",
-    .logo_url = "https://flark.dev/matrixfilter/logo",
-    .artist_url = "https://flark.dev",
     .version = "1.0.0",
     .description = "A versatile audio filter plugin supporting multiple filter types including low-pass, high-pass, band-pass, notch, peaking, and shelf filters.",
-    .features = (const char *[]){
-        CLAP_PLUGIN_FEATURE_DYNAMICS,
-        CLAP_PLUGIN_FEATURE_STEREO,
-        NULL
-    },
+    .features = s_plugin_features,
 };
 
 // Parameter IDs
@@ -66,25 +70,29 @@ typedef struct {
     uint32_t temp_buffer_size;
 } audio_filter_plugin_t;
 
-// Plugin extensions
-static const clap_plugin_params_t s_plugin_params;
-static const clap_plugin_state_t s_plugin_state;
-static const clap_plugin_latency_t s_plugin_latency;
-static const clap_plugin_audio_ports_t s_plugin_audio_ports;
-static const clap_plugin_ambisonic_t s_plugin_ambisonic;
-static const clap_plugin_surround_t s_plugin_surround;
-static const clap_plugin_gui_t s_plugin_gui;
+// Plugin extensions (defined in plugin-extensions.cpp)
+extern clap_plugin_params_t s_plugin_params;
+extern clap_plugin_state_t s_plugin_state;
+extern clap_plugin_latency_t s_plugin_latency;
+extern clap_plugin_audio_ports_t s_plugin_audio_ports;
+extern clap_plugin_ambisonic_t s_plugin_ambisonic;
+extern clap_plugin_surround_t s_plugin_surround;
+extern clap_plugin_gui_t s_plugin_gui;
 
-// Function declarations
+// Forward declarations
 static void destroy(audio_filter_plugin_t *plugin);
 static bool init(audio_filter_plugin_t *plugin);
 static void deactivate(audio_filter_plugin_t *plugin);
-static bool start_processing(const audio_filter_plugin_t *plugin);
-static void stop_processing(const audio_filter_plugin_t *plugin);
-static void reset(const audio_filter_plugin_t *plugin);
-static clap_process_status_t process(audio_filter_plugin_t *plugin, const clap_process_t *process);
+static bool start_processing(audio_filter_plugin_t *plugin);
+static void stop_processing(audio_filter_plugin_t *plugin);
+static void reset(audio_filter_plugin_t *plugin);
+static clap_process_status process(audio_filter_plugin_t *plugin, const clap_process_t *process_data);
 static const void *get_extension(const audio_filter_plugin_t *plugin, const char *id);
-static void on_main_thread(const audio_filter_plugin_t *plugin);
+static void on_main_thread(audio_filter_plugin_t *plugin);
+static void update_filter_parameters(audio_filter_plugin_t *plugin);
+
+// Plugin wrapper function declarations
+static bool audio_filter_activate(const clap_plugin_t *plugin, double sample_rate, uint32_t min_frames_count, uint32_t max_frames_count);
 
 // Plugin methods
 static void audio_filter_destroy(const clap_plugin_t *plugin) {
@@ -117,9 +125,9 @@ static void audio_filter_reset(const clap_plugin_t *plugin) {
     reset(p);
 }
 
-static clap_process_status_t audio_filter_process(const clap_plugin_t *plugin, const clap_process_t *process) {
+static clap_process_status audio_filter_process(const clap_plugin_t *plugin, const clap_process_t *process_data) {
     audio_filter_plugin_t *p = (audio_filter_plugin_t *)plugin->plugin_data;
-    return process(p, process);
+    return process(p, process_data);
 }
 
 static const void *audio_filter_get_extension(const clap_plugin_t *plugin, const char *id) {
@@ -161,15 +169,15 @@ static void deactivate(audio_filter_plugin_t *plugin) {
     }
 }
 
-static bool start_processing(const audio_filter_plugin_t *plugin) {
+static bool start_processing(audio_filter_plugin_t *plugin) {
     return true;
 }
 
-static void stop_processing(const audio_filter_plugin_t *plugin) {
+static void stop_processing(audio_filter_plugin_t *plugin) {
     // Nothing to do
 }
 
-static void reset(const audio_filter_plugin_t *plugin) {
+static void reset(audio_filter_plugin_t *plugin) {
     filter_reset(&plugin->filter);
 }
 
@@ -178,13 +186,13 @@ static void update_filter_parameters(audio_filter_plugin_t *plugin) {
     filter_set_sample_rate(&plugin->filter, plugin->sample_rate);
 }
 
-static clap_process_status_t process(audio_filter_plugin_t *plugin, const clap_process_t *process) {
-    const uint32_t nframes = process->frames_count;
-    
+static clap_process_status process(audio_filter_plugin_t *plugin, const clap_process_t *process_data) {
+    const uint32_t nframes = process_data->frames_count;
+
     // Handle events
-    uint32_t num_events = process->in_events->size(process->in_events);
+    uint32_t num_events = process_data->in_events->size(process_data->in_events);
     for (uint32_t i = 0; i < num_events; ++i) {
-        const clap_event_header_t *event = process->in_events->get(process->in_events, i);
+        const clap_event_header_t *event = process_data->in_events->get(process_data->in_events, i);
         
         if (event->type == CLAP_EVENT_PARAM_VALUE) {
             const clap_event_param_value_t *param_event = (const clap_event_param_value_t *)event;
@@ -213,9 +221,9 @@ static clap_process_status_t process(audio_filter_plugin_t *plugin, const clap_p
     }
     
     // Process audio
-    if (process->audio_inputs_count >= 1 && process->audio_outputs_count >= 1) {
-        const clap_audio_buffer_t *input = &process->audio_inputs[0];
-        const clap_audio_buffer_t *output = &process->audio_outputs[0];
+    if (process_data->audio_inputs_count >= 1 && process_data->audio_outputs_count >= 1) {
+        const clap_audio_buffer_t *input = &process_data->audio_inputs[0];
+        clap_audio_buffer_t *output = &process_data->audio_outputs[0];
         
         // Ensure we have enough buffer space
         if (plugin->temp_buffer_size < nframes) {
@@ -287,15 +295,10 @@ static const void *get_extension(const audio_filter_plugin_t *plugin, const char
     return NULL;
 }
 
-static void on_main_thread(const audio_filter_plugin_t *plugin) {
-    // Update sample rate if needed
-    if (plugin->host && plugin->host->get_sample_rate) {
-        double new_sample_rate = plugin->host->get_sample_rate(plugin->host);
-        if (new_sample_rate > 0 && new_sample_rate != plugin->sample_rate) {
-            plugin->sample_rate = (float)new_sample_rate;
-            update_filter_parameters((audio_filter_plugin_t *)plugin);
-        }
-    }
+static void on_main_thread(audio_filter_plugin_t *plugin) {
+    // Main thread callback - can be used for GUI updates or deferred operations
+    // Sample rate is set via the activate() callback
+    (void)plugin; // Unused for now
 }
 
 // Export plugin functions
@@ -342,56 +345,60 @@ static bool audio_filter_activate(const clap_plugin_t *plugin, double sample_rat
     return true;
 }
 
-// Helper function for parameter bounds
-static const clap_param_info_t s_param_info[] = {
+// Parameter information
+clap_param_info_t s_param_info[] = {
     {
         .id = PARAM_CUTOFF,
+        .flags = CLAP_PARAM_IS_AUTOMATABLE,
+        .cookie = NULL,
         .name = "Cutoff Frequency",
         .module = "",
-        .min_value = 20.0f,
-        .max_value = 20000.0f,
-        .default_value = 1000.0f,
-        .flags = CLAP_PARAM_IS_AUTOMATABLE | CLAP_PARAM_IS_STEPPED,
-        .cookie = NULL,
+        .min_value = 20.0,
+        .max_value = 20000.0,
+        .default_value = 1000.0,
     },
     {
         .id = PARAM_RESONANCE,
-        .name = "Resonance",
-        .module = "",
-        .min_value = 0.1f,
-        .max_value = 10.0f,
-        .default_value = 1.0f,
         .flags = CLAP_PARAM_IS_AUTOMATABLE,
         .cookie = NULL,
+        .name = "Resonance",
+        .module = "",
+        .min_value = 0.1,
+        .max_value = 10.0,
+        .default_value = 1.0,
     },
     {
         .id = PARAM_GAIN,
-        .name = "Gain",
-        .module = "",
-        .min_value = -60.0f,
-        .max_value = 60.0f,
-        .default_value = 0.0f,
         .flags = CLAP_PARAM_IS_AUTOMATABLE,
         .cookie = NULL,
+        .name = "Gain",
+        .module = "",
+        .min_value = -60.0,
+        .max_value = 60.0,
+        .default_value = 0.0,
     },
     {
         .id = PARAM_TYPE,
-        .name = "Filter Type",
-        .module = "",
-        .min_value = 0.0f,
-        .max_value = 6.0f,
-        .default_value = 0.0f,
         .flags = CLAP_PARAM_IS_AUTOMATABLE | CLAP_PARAM_IS_STEPPED,
         .cookie = NULL,
+        .name = "Filter Type",
+        .module = "",
+        .min_value = 0.0,
+        .max_value = 6.0,
+        .default_value = 0.0,
     },
     {
         .id = PARAM_ENABLED,
-        .name = "Enabled",
-        .module = "",
-        .min_value = 0.0f,
-        .max_value = 1.0f,
-        .default_value = 1.0f,
         .flags = CLAP_PARAM_IS_AUTOMATABLE | CLAP_PARAM_IS_STEPPED,
         .cookie = NULL,
+        .name = "Enabled",
+        .module = "",
+        .min_value = 0.0,
+        .max_value = 1.0,
+        .default_value = 1.0,
     }
 };
+
+#ifdef __cplusplus
+}
+#endif
