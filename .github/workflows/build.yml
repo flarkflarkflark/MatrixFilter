@@ -28,12 +28,20 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release ..
           make -j$(nproc)
 
-      - name: Upload artifacts
+      - name: Upload CLAP artifacts
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MatrixFilter-Linux-CLAP
           path: build/**/*.clap
+          if-no-files-found: warn
+
+      - name: Upload VST3 artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MatrixFilter-Linux-VST3
+          path: build/**/*.vst3
           if-no-files-found: warn
 
   build-windows:
@@ -54,12 +62,20 @@ jobs:
           cmake -G "Visual Studio 17 2022" -A x64 ..
           cmake --build . --config Release
 
-      - name: Upload artifacts
+      - name: Upload CLAP artifacts
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MatrixFilter-Windows-CLAP
           path: build/**/*.clap
+          if-no-files-found: warn
+
+      - name: Upload VST3 artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MatrixFilter-Windows-VST3
+          path: build/**/*.vst3
           if-no-files-found: warn
 
   build-macos:
@@ -81,10 +97,18 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 ..
           make -j$(sysctl -n hw.ncpu)
 
-      - name: Upload artifacts
+      - name: Upload CLAP artifacts
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MatrixFilter-macOS-CLAP
           path: build/**/*.clap
+          if-no-files-found: warn
+
+      - name: Upload VST3 artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MatrixFilter-macOS-VST3
+          path: build/**/*.vst3
           if-no-files-found: warn

@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
-project(MatrixFilter VERSION 1.0.0 LANGUAGES C CXX)
+project(MatrixFilter VERSION 1.1.0 LANGUAGES C CXX)
 
+# Option to build VST3 version
+option(BUILD_VST3 "Build VST3 version" ON)
+
+# CLAP Plugin target
 add_library(MatrixFilter SHARED)
 set_target_properties(MatrixFilter PROPERTIES
     C_STANDARD 11
@@ -89,3 +93,54 @@ endif()
 # Installation
 install(TARGETS MatrixFilter DESTINATION .)
 install(FILES README.md DESTINATION .)
+
+#-------------------------------------------------------------------------------
+# VST3 Plugin Build
+#-------------------------------------------------------------------------------
+if(BUILD_VST3)
+    message(STATUS "Building VST3 version: MatrixFilter VST")
+
+    # Disable VSTGUI to avoid GUI dependencies
+    set(SMTG_ADD_VSTGUI OFF CACHE BOOL "Disable VSTGUI" FORCE)
+    set(SMTG_CREATE_VST2_VERSION OFF CACHE BOOL "Disable VST2" FORCE)
+
+    # Add VST3 SDK
+    add_subdirectory(external/vst3sdk)
+
+    # Create VST3 plugin target
+    set(vst3sdk_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/vst3sdk)
+
+    set(target MatrixFilterVST)
+
+    smtg_add_vst3plugin(${target}
+        src/vst3/MatrixFilterVST_processor.cpp
+        src/vst3/MatrixFilterVST_processor.h
+        src/vst3/MatrixFilterVST_controller.cpp
+        src/vst3/MatrixFilterVST_controller.h
+        src/vst3/MatrixFilterVST_cids.h
+        src/vst3/MatrixFilterVST_entry.cpp
+        src/dsp.cpp
+    )
+
+    target_include_directories(${target} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    target_link_libraries(${target} PRIVATE
+        sdk
+        m
+    )
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_package(Threads REQUIRED)
+        target_link_libraries(${target} PRIVATE Threads::Threads)
+    endif()
+
+    smtg_target_set_bundle(${target}
+        BUNDLE_IDENTIFIER com.matrixfilter.vst3
+        COMPANY_NAME "MatrixFilter"
+    )
+
+    # Installation
+    install(TARGETS ${target} DESTINATION .)
+endif()
