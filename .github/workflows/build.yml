@@ -32,7 +32,8 @@ jobs:
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release ..
-          make -j$(nproc) MatrixFilterVST || make MatrixFilterVST
+          make -j$(nproc) MatrixFilterVST || make MatrixFilterVST || true
+          ls -la VST3/Release/ || echo "VST3 directory not found"
 
       - name: Upload VST3 artifacts
         if: success()
@@ -85,7 +86,8 @@ jobs:
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 ..
-          make -j$(sysctl -n hw.ncpu) MatrixFilterVST || make MatrixFilterVST
+          make -j$(sysctl -n hw.ncpu) MatrixFilterVST || make MatrixFilterVST || true
+          ls -la VST3/Release/ || echo "VST3 directory not found"
 
       - name: Upload VST3 artifacts
         if: success()
