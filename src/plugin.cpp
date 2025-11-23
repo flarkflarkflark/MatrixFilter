@@ -9,6 +9,14 @@
 extern "C" {
 #endif
 
+// Plugin features array (static to avoid MSVC compound literal issues)
+static const char *s_plugin_features[] = {
+    CLAP_PLUGIN_FEATURE_FILTER,
+    CLAP_PLUGIN_FEATURE_AUDIO_EFFECT,
+    CLAP_PLUGIN_FEATURE_STEREO,
+    NULL
+};
+
 // Plugin descriptor
 clap_plugin_descriptor_t s_plugin_desc = {
     .clap_version = CLAP_VERSION_INIT,
@@ -20,12 +28,7 @@ clap_plugin_descriptor_t s_plugin_desc = {
     .support_url = "https://flark.dev/matrixfilter/support",
     .version = "1.0.0",
     .description = "A versatile audio filter plugin supporting multiple filter types including low-pass, high-pass, band-pass, notch, peaking, and shelf filters.",
-    .features = (const char *[]){
-        CLAP_PLUGIN_FEATURE_FILTER,
-        CLAP_PLUGIN_FEATURE_AUDIO_EFFECT,
-        CLAP_PLUGIN_FEATURE_STEREO,
-        NULL
-    },
+    .features = s_plugin_features,
 };
 
 // Parameter IDs
