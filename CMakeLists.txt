@@ -37,12 +37,14 @@ target_include_directories(${target} PRIVATE
 
 target_link_libraries(${target} PRIVATE
     sdk
-    m
 )
 
+# Platform-specific libraries
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Threads REQUIRED)
-    target_link_libraries(${target} PRIVATE Threads::Threads)
+    target_link_libraries(${target} PRIVATE Threads::Threads m)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_link_libraries(${target} PRIVATE m)
 endif()
 
 smtg_target_set_bundle(${target}
