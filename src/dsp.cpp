@@ -185,17 +185,14 @@ void filter_init(filter_t *filter, filter_type_t type, float cutoff_freq, float 
 }
 
 void filter_set_parameters(filter_t *filter, filter_type_t type, float cutoff_freq, float resonance, float gain) {
-    bool type_changed = (filter->type != type);
-    
     filter->type = type;
     filter->cutoff_freq = cutoff_freq;
     filter->resonance = resonance;
     filter->gain = gain;
-    
-    if (type_changed || !filter->initialized) {
-        calculate_biquad_coefficients(filter);
-        filter->initialized = true;
-    }
+
+    // Always recalculate coefficients when parameters change
+    calculate_biquad_coefficients(filter);
+    filter->initialized = true;
 }
 
 void filter_set_sample_rate(filter_t *filter, float sample_rate) {
