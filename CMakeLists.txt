@@ -1,81 +1,59 @@
 cmake_minimum_required(VERSION 3.17)
-project(MatrixFilter VERSION 1.0.0 LANGUAGES C CXX)
+project(MatrixFilter VERSION 1.1.0 LANGUAGES C CXX)
 
-# Find CLAP
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(CLAP REQUIRED clap)
+#-------------------------------------------------------------------------------
+# VST3 Plugin Build
+#-------------------------------------------------------------------------------
+message(STATUS "Building MatrixFilter VST3")
 
-add_library(MatrixFilter SHARED)
-set_target_properties(MatrixFilter PROPERTIES
-    C_STANDARD 11
-    CXX_STANDARD 17
-)
+# Disable VSTGUI and samples to avoid GUI dependencies
+set(SMTG_ADD_VSTGUI OFF CACHE BOOL "Disable VSTGUI" FORCE)
+set(SMTG_CREATE_VST2_VERSION OFF CACHE BOOL "Disable VST2" FORCE)
+set(SMTG_ENABLE_VSTGUI_SUPPORT OFF CACHE BOOL "Disable VSTGUI support" FORCE)
+set(SMTG_ADD_VST3_HOSTING_SAMPLES OFF CACHE BOOL "Disable VST3 hosting samples" FORCE)
+set(SMTG_ADD_VST3_PLUGINS_SAMPLES OFF CACHE BOOL "Disable VST3 plugin samples" FORCE)
+set(SMTG_RUN_VST_VALIDATOR OFF CACHE BOOL "Disable VST3 validator" FORCE)
+set(SMTG_PLUGIN_TARGET_USER_PROGRAM_FILES_COMMON OFF CACHE BOOL "Disable plugin installation" FORCE)
+set(SMTG_COREAUDIO_SDK_PATH "" CACHE STRING "Disable CoreAudio" FORCE)
 
-# Include directories
-target_include_directories(MatrixFilter PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CLAP_INCLUDE_DIRS}
-)
+# Add VST3 SDK
+add_subdirectory(external/vst3sdk)
 
-# Source files
-target_sources(MatrixFilter PRIVATE
-    src/dsp.h
+# Create VST3 plugin target
+set(vst3sdk_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/vst3sdk)
+set(target MatrixFilterVST)
+
+smtg_add_vst3plugin(${target}
+    src/vst3/MatrixFilterVST_processor.cpp
+    src/vst3/MatrixFilterVST_processor.h
+    src/vst3/MatrixFilterVST_controller.cpp
+    src/vst3/MatrixFilterVST_controller.h
+    src/vst3/MatrixFilterVST_cids.h
+    src/vst3/MatrixFilterVST_entry.cpp
     src/dsp.cpp
-    src/plugin.cpp
-    src/plugin-extensions.cpp
-    src/gui-extension.cpp
-    src/plugin-factory.cpp
-    src/plugin-entry.cpp
 )
 
-# Link libraries
-target_link_libraries(MatrixFilter PRIVATE
-    ${CLAP_LIBRARIES}
-    m
-    pthread
+target_include_directories(${target} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# Platform-specific settings and dependencies
+target_link_libraries(${target} PRIVATE
+    sdk
+)
+
+# Platform-specific libraries
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    # Find OpenGL for Linux
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(MatrixFilter PRIVATE OpenGL::GL)
-    
-    # Link pthread for Linux
     find_package(Threads REQUIRED)
-    target_link_libraries(MatrixFilter PRIVATE Threads::Threads)
-    
-    # Symbol exports for Linux
-    target_link_libraries(MatrixFilter PRIVATE -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/symbols.map)
-    target_link_libraries(MatrixFilter PRIVATE -Wl,-z,defs)
-    set_target_properties(MatrixFilter PROPERTIES SUFFIX ".clap" PREFIX "")
-    
+    target_link_libraries(${target} PRIVATE Threads::Threads m)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    # Find OpenGL for macOS
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(MatrixFilter PRIVATE OpenGL::GL)
-    
-    # Symbol exports for macOS
-    target_link_options(MatrixFilter PRIVATE -exported_symbols_list ${CMAKE_CURRENT_SOURCE_DIR}/src/symbols.map)
-    set_target_properties(MatrixFilter PROPERTIES
-        BUNDLE True
-        BUNDLE_EXTENSION clap
-        MACOSX_BUNDLE_GUI_IDENTIFIER com.flark.matrixfilter
-        MACOSX_BUNDLE_BUNDLE_NAME "flark's MatrixFilter"
-        MACOSX_BUNDLE_BUNDLE_VERSION "1.0.0"
-        MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0.0"
-    )
-    
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    # Find OpenGL for Windows
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(MatrixFilter PRIVATE OpenGL::GL)
-    
-    # Symbol exports for Windows
-    target_link_options(MatrixFilter PRIVATE /DEF:${CMAKE_CURRENT_SOURCE_DIR}/src/symbols-windows.txt)
-    set_target_properties(MatrixFilter PROPERTIES SUFFIX ".clap" PREFIX "")
+    target_link_libraries(${target} PRIVATE m)
 endif()
 
+smtg_target_set_bundle(${target}
+    BUNDLE_IDENTIFIER com.matrixfilter.vst3
+    COMPANY_NAME "MatrixFilter"
+)
+
 # Installation
-install(TARGETS MatrixFilter DESTINATION .)
+install(TARGETS ${target} DESTINATION .)
 install(FILES README.md DESTINATION .)

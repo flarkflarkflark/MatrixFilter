@@ -1,111 +1,224 @@
-# MatrixFilter Complete Fix - Quick Start
+# MatrixFilter
 
-## One Command to Fix Everything!
+[![Build Status](https://github.com/flarkflarkflark/MatrixFilter/actions/workflows/build.yml/badge.svg)](https://github.com/flarkflarkflark/MatrixFilter/actions/workflows/build.yml)
+[![Latest Release](https://img.shields.io/github/v/release/flarkflarkflark/MatrixFilter)](https://github.com/flarkflarkflark/MatrixFilter/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-This package contains a single script that will fix all naming issues and set up GitHub Actions for your MatrixFilter repository.
+A high-quality stereo audio filter VST3 plugin featuring biquad filter implementation for professional audio processing.
 
-## What It Does
+## Features
 
-The `fix_all.sh` script will automatically:
+- 🎚️ **Biquad Filter DSP** - Professional-grade digital filter implementation
+- 🎧 **Stereo Processing** - Independent left/right channel filtering
+- 🔌 **VST3 Format** - Industry-standard plugin format
+- 🖥️ **Cross-Platform** - Builds on Linux, Windows, and macOS
+- ⚡ **High Performance** - Optimized C++ implementation
+- 🎛️ **Parametric Control** - Adjustable filter parameters via host automation
+- 🎼 **7 Filter Types** - Lowpass, Highpass, Bandpass, Notch, Peaking, Low Shelf, High Shelf
 
-1. ✅ Find and replace all "Flanger" → "Filter" references
-2. ✅ Create GitHub Actions workflows for Linux, Windows, and macOS
-3. ✅ Make all build scripts executable
-4. ✅ Commit all changes to git
-5. ✅ Push to GitHub (with your confirmation)
+## Download
+
+Pre-built binaries are available from the [Releases](https://github.com/flarkflarkflark/MatrixFilter/releases) page.
+
+Download the appropriate package for your platform:
+- **Linux**: `MatrixFilter-Linux-VST3.zip`
+- **Windows**: `MatrixFilter-Windows-VST3.zip`
+- **macOS**: `MatrixFilter-macOS-VST3.zip`
 
 ## Installation
 
-1. **Download the script** to your MatrixFilter repository root:
-   ```bash
-   cd /path/to/MatrixFilter
-   # Copy fix_all.sh here
-   ```
+### Linux
+```bash
+unzip MatrixFilter-Linux-VST3.zip
+mkdir -p ~/.vst3
+cp -r MatrixFilterVST.vst3 ~/.vst3/
+```
 
-2. **Make it executable** (if not already):
-   ```bash
-   chmod +x fix_all.sh
-   ```
+### Windows
+```powershell
+# Extract MatrixFilter-Windows-VST3.zip
+# Copy MatrixFilterVST.vst3 to one of:
+#   - C:\Program Files\Common Files\VST3\ (system-wide)
+#   - %LOCALAPPDATA%\Programs\Common\VST3\ (user-specific)
+```
+
+### macOS
+```bash
+unzip MatrixFilter-macOS-VST3.zip
+mkdir -p ~/Library/Audio/Plug-Ins/VST3
+cp -r MatrixFilterVST.vst3 ~/Library/Audio/Plug-Ins/VST3/
+```
 
 ## Usage
 
-Simply run:
+1. **Load in your DAW**: MatrixFilter VST will appear in your VST3 plugin list
+2. **Insert on a track**: Add MatrixFilter to any audio track
+3. **Adjust parameters**: Control filter type, cutoff, resonance, and gain via automation
+4. **Process audio**: The biquad filter will process incoming stereo audio in real-time
+
+### Parameters
+
+- **Filter Type**: Lowpass, Highpass, Bandpass, Notch, Peaking, Low Shelf, High Shelf
+- **Cutoff Frequency**: 20Hz - 20kHz (logarithmic scale)
+- **Resonance (Q)**: 0.1 - 10.0
+- **Gain**: -24dB to +24dB (for shelf and peaking filters)
+
+### Compatible DAWs
+
+Works with any VST3-compatible DAW including:
+- Ableton Live 11+
+- Cubase/Nuendo
+- FL Studio 21+
+- Logic Pro (with VST3 support)
+- Reaper
+- Studio One
+- Bitwig Studio
+- And most modern DAWs
+
+## Building from Source
+
+### Requirements
+
+- **CMake** 3.15 or higher
+- **C++20** compatible compiler:
+  - GCC 8+ (Linux)
+  - MSVC 19.29+ / Visual Studio 2019+ (Windows)
+  - Clang 10+ (macOS)
+- **Git** (for submodule management)
+
+### Build Instructions
+
+#### Linux / macOS
 ```bash
-./fix_all.sh
+# Clone repository with submodules
+git clone --recursive https://github.com/flarkflarkflark/MatrixFilter.git
+cd MatrixFilter
+
+# Configure and build
+mkdir build && cd build
+cmake ..
+cmake --build .
+
+# The plugin binary will be in: MatrixFilter.clap
 ```
 
-The script will:
-- Show you what it's going to change (preview)
-- Ask for confirmation before making changes
-- Apply all fixes automatically
-- Ask if you want to push to GitHub
+#### Windows
+```powershell
+# Clone repository with submodules
+git clone --recursive https://github.com/flarkflarkflark/MatrixFilter.git
+cd MatrixFilter
 
-## What Happens After
+# Configure and build
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
 
-Once pushed to GitHub:
-
-1. **GitHub Actions will automatically build** your plugins for:
-   - Linux (CLAP, VST3, LV2)
-   - Windows (CLAP, VST3)
-   - macOS (CLAP, VST3, LV2)
-
-2. **Check build status** at:
-   ```
-   https://github.com/flarkflarkflark/MatrixFilter/actions
-   ```
-
-3. **Download built plugins** from the Actions tab (Artifacts section)
-
-## Creating a Release
-
-To create a tagged release with automatic builds:
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
+# The plugin binary will be in: Release\MatrixFilter.clap
 ```
 
-This will trigger builds and create a GitHub release with all platform binaries attached!
+### If You Forgot --recursive
+```bash
+git submodule update --init --recursive
+```
 
-## Safety Features
+## Development
 
-The script includes:
-- Preview of changes before applying
-- Confirmation prompts
-- Git repository checks
-- Warns about uncommitted changes
-- Skips files that are already correct
+### Project Structure
+```
+MatrixFilter/
+├── src/
+│   ├── plugin.cpp              # Main plugin implementation
+│   ├── plugin-factory.cpp      # Plugin factory
+│   ├── plugin-entry.cpp        # CLAP entry point
+│   ├── plugin-extensions.cpp   # Plugin extensions (params, state)
+│   ├── dsp.cpp                 # DSP implementation
+│   └── gui.cpp                 # GUI implementation (optional)
+├── include/
+│   ├── plugin.h                # Plugin interface
+│   ├── dsp.h                   # DSP interface
+│   └── gui.h                   # GUI interface
+├── external/
+│   └── clap/                   # CLAP SDK (submodule)
+├── .github/
+│   └── workflows/
+│       └── build.yml           # CI/CD configuration
+└── CMakeLists.txt              # Build configuration
+```
 
-## Troubleshooting
+### Architecture
 
-**"Not a git repository"**
-- Make sure you're in the root of your MatrixFilter repository
+MatrixFilter follows the CLAP plugin specification and implements:
 
-**"Permission denied"**
-- Run: `chmod +x fix_all.sh`
+- **Plugin Descriptor**: Metadata and feature declarations
+- **Plugin Factory**: Plugin instantiation
+- **Audio Processing**: Biquad filter DSP in `process()` callback
+- **Parameter Management**: Exposing filter parameters to the host
+- **State Management**: Saving/loading plugin state
 
-**Push failed**
-- You may need to set up git credentials
-- Or push manually: `git push origin main`
+### Code Quality
 
-**Build fails on GitHub**
-- Check that build scripts exist and are correct
-- Review the Actions log for specific errors
+The codebase has been extensively reviewed and fixed:
+- ✅ All compiler warnings resolved
+- ✅ MSVC, GCC, and Clang compatibility
+- ✅ Proper C/C++ linkage with `extern "C"`
+- ✅ Platform-specific symbol exports
+- ✅ Modern C++20 features where appropriate
 
-## Manual Alternatives
+See [BUGS.md](BUGS.md) for detailed documentation of issues found and fixed.
 
-If you prefer to do things manually, see:
-- `INSTRUCTIONS.md` - Detailed step-by-step guide
-- `NAMING_CHECKLIST.md` - Complete checklist of what to fix
-- `fix_naming.sh` - Just the naming fixes (no git operations)
+## CI/CD
 
-## Support
+Automated builds run on every push via GitHub Actions:
+- **Multi-platform builds** (Linux, Windows, macOS)
+- **Automated testing** of build process
+- **Artifact generation** for easy distribution
 
-After running this script:
-1. Verify changes with `git diff HEAD~1`
-2. Test a local build if possible
-3. Monitor GitHub Actions for build results
+View build status: [Actions](https://github.com/flarkflarkflark/MatrixFilter/actions)
+
+## Technical Details
+
+### DSP Implementation
+- **Filter Type**: Biquad (2nd order IIR)
+- **Processing**: 32-bit floating point
+- **Channels**: Stereo (2 channels)
+- **Sample Rate**: Adaptive (supports all standard rates)
+
+### CLAP Features
+- Audio effect processing
+- Stereo input/output
+- Parameter automation
+- State save/restore
+- Thread-safe audio processing
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+
+### Building and Testing Changes
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test on your platform
+5. Submit a pull request
+
+The CI/CD pipeline will automatically build and test your changes on all platforms.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- **CLAP SDK** - [CLever Audio Plugin API](https://github.com/free-audio/clap)
+- **Biquad Filter** - Classic digital filter design
+
+## Links
+
+- [CLAP Specification](https://github.com/free-audio/clap)
+- [Issue Tracker](https://github.com/flarkflarkflark/MatrixFilter/issues)
+- [Releases](https://github.com/flarkflarkflark/MatrixFilter/releases)
 
 ---
 
-**Ready?** Just run: `./fix_all.sh`
+**Made with 🎵 for audio developers and musicians**
