@@ -13,6 +13,7 @@ set(SMTG_ENABLE_VSTGUI_SUPPORT OFF CACHE BOOL "Disable VSTGUI support" FORCE)
 set(SMTG_ADD_VST3_HOSTING_SAMPLES OFF CACHE BOOL "Disable VST3 hosting samples" FORCE)
 set(SMTG_ADD_VST3_PLUGINS_SAMPLES OFF CACHE BOOL "Disable VST3 plugin samples" FORCE)
 set(SMTG_RUN_VST_VALIDATOR OFF CACHE BOOL "Disable VST3 validator" FORCE)
+set(SMTG_CREATE_MODULE_INFO OFF CACHE BOOL "Disable module info generation" FORCE)
 set(SMTG_PLUGIN_TARGET_USER_PROGRAM_FILES_COMMON OFF CACHE BOOL "Disable plugin installation" FORCE)
 set(SMTG_COREAUDIO_SDK_PATH "" CACHE STRING "Disable CoreAudio" FORCE)
 
@@ -47,17 +48,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(${target} PRIVATE Threads::Threads m)
 
     # Fix symbol visibility for VST3 entry points on Linux
-    # The VST3 SDK requires ModuleEntry and GetPluginFactory to be exported
-    set_target_properties(${target} PROPERTIES
-        CXX_VISIBILITY_PRESET default
-        C_VISIBILITY_PRESET default
-        VISIBILITY_INLINES_HIDDEN OFF
+    # Force all symbols to be visible - VST3 SDK requires ModuleEntry and GetPluginFactory
+    target_compile_options(${target} PRIVATE
+        "-fvisibility=default"
     )
 
-    # Add linker flags to export all symbols (VST3 SDK handles filtering)
     target_link_options(${target} PRIVATE
         "-Wl,--no-undefined"
-        "-Wl,--export-dynamic"
     )
 
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
