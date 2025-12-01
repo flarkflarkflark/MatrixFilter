@@ -11,12 +11,15 @@ echo "Building flark's MatrixFilter for Linux..."
 mkdir -p build/linux
 cd build/linux
 
-# Run CMake configuration
+# Run CMake configuration (using CLAP-specific CMakeLists)
+cp ../../CMakeLists-clap.txt ../../CMakeLists.txt.bak
+cp ../../CMakeLists-clap.txt ../../CMakeLists.txt
 cmake ../.. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER=gcc \
     -DCMAKE_CXX_COMPILER=g++ \
     -DCMAKE_INSTALL_PREFIX=./install
+mv ../../CMakeLists.txt.bak ../../CMakeLists.txt
 
 echo "CMake configuration completed."
 
