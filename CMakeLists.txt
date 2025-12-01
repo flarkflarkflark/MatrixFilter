@@ -13,6 +13,7 @@ set(SMTG_ENABLE_VSTGUI_SUPPORT OFF CACHE BOOL "Disable VSTGUI support" FORCE)
 set(SMTG_ADD_VST3_HOSTING_SAMPLES OFF CACHE BOOL "Disable VST3 hosting samples" FORCE)
 set(SMTG_ADD_VST3_PLUGINS_SAMPLES OFF CACHE BOOL "Disable VST3 plugin samples" FORCE)
 set(SMTG_RUN_VST_VALIDATOR OFF CACHE BOOL "Disable VST3 validator" FORCE)
+set(SMTG_CREATE_MODULE_INFO OFF CACHE BOOL "Disable module info generation" FORCE)
 set(SMTG_PLUGIN_TARGET_USER_PROGRAM_FILES_COMMON OFF CACHE BOOL "Disable plugin installation" FORCE)
 set(SMTG_COREAUDIO_SDK_PATH "" CACHE STRING "Disable CoreAudio" FORCE)
 
@@ -41,10 +42,21 @@ target_link_libraries(${target} PRIVATE
     sdk
 )
 
-# Platform-specific libraries
+# Platform-specific libraries and symbol visibility
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Threads REQUIRED)
     target_link_libraries(${target} PRIVATE Threads::Threads m)
+
+    # Fix symbol visibility for VST3 entry points on Linux
+    # Force all symbols to be visible - VST3 SDK requires ModuleEntry and GetPluginFactory
+    target_compile_options(${target} PRIVATE
+        "-fvisibility=default"
+    )
+
+    target_link_options(${target} PRIVATE
+        "-Wl,--no-undefined"
+    )
+
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_link_libraries(${target} PRIVATE m)
 endif()
