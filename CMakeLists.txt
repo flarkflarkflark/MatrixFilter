@@ -78,6 +78,16 @@ smtg_target_set_bundle(${target}
     COMPANY_NAME "MatrixFilter"
 )
 
+# Add moduleinfo.json to VST3 bundle (required by some DAWs like Reaper)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/moduleinfo.json.in
+            $<TARGET_FILE_DIR:${target}>/../Resources/moduleinfo.json
+        COMMENT "Copying moduleinfo.json to VST3 bundle"
+    )
+endif()
+
 # Installation
 install(TARGETS ${target} DESTINATION .)
 install(FILES README.md DESTINATION .)
