@@ -41,10 +41,25 @@ target_link_libraries(${target} PRIVATE
     sdk
 )
 
-# Platform-specific libraries
+# Platform-specific libraries and symbol visibility
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Threads REQUIRED)
     target_link_libraries(${target} PRIVATE Threads::Threads m)
+
+    # Fix symbol visibility for VST3 entry points on Linux
+    # The VST3 SDK requires ModuleEntry and GetPluginFactory to be exported
+    set_target_properties(${target} PROPERTIES
+        CXX_VISIBILITY_PRESET default
+        C_VISIBILITY_PRESET default
+        VISIBILITY_INLINES_HIDDEN OFF
+    )
+
+    # Add linker flags to export all symbols (VST3 SDK handles filtering)
+    target_link_options(${target} PRIVATE
+        "-Wl,--no-undefined"
+        "-Wl,--export-dynamic"
+    )
+
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_link_libraries(${target} PRIVATE m)
 endif()
